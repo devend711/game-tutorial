@@ -23,6 +23,7 @@ public class UserInput : MonoBehaviour {
 	private void MonitorMouseActivity () {
 		if(Input.GetMouseButtonDown(0)) LeftMouseClick();
 		else if(Input.GetMouseButtonDown(1)) RightMouseClick();
+		else MouseHover();
 	}
 
 	private void LeftMouseClick() {
@@ -34,9 +35,10 @@ public class UserInput : MonoBehaviour {
 				if(player.SelectedObject) {
 					player.SelectedObject.MouseClick(hitObject, hitPoint, player);
 				} else {
-					WorldObject worldObject = hitObject.transform.root.GetComponent< WorldObject >();
+					WorldObject worldObject = hitObject.transform.parent.GetComponent<WorldObject>();
+					Debug.Log(worldObject.name);
 					if(worldObject) {
-						//we already know the player has no selected object
+						// we already know the player has no selected object
 						player.SelectedObject = worldObject;
 						worldObject.SetSelection(true, player.hud.GetPlayingArea());
 					}
@@ -52,11 +54,33 @@ public class UserInput : MonoBehaviour {
 		}
 	}
 
+	private void MouseHover() {
+		if(player.hud.MouseInBounds()) {
+			GameObject hoverObject = FindHitObject();
+			if(hoverObject) {
+				if(player.SelectedObject) player.SelectedObject.SetHoverState(hoverObject);
+				// if we don't have anything selected already...
+				else if(hoverObject.name != "Ground") {
+					// check if the hovered object is owned by the player
+					Player owner = hoverObject.transform.parent.GetComponent<Player>();
+					if(owner) {
+						Debug.Log("this hovered object is owned by the player");
+						// look for a unit or building that we are hovering over
+						Unit unit = hoverObject.transform.parent.GetComponent<Unit>();
+						Building building = hoverObject.transform.parent.GetComponent<Building>();
+						// indicate that it is selectable
+						if(owner.username == player.username && (unit || building)) player.hud.SetCursorState(CursorState.Select);
+					}
+				}
+			}
+		}
+	}
+
 	private GameObject FindHitObject () {
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		RaycastHit hit;
-		//RayCast will store the first collided object in `hit`
-		//or returns false if no object is found
+		// RayCast will store the first collided object in `hit`
+		// or return false if no object is found
 		if(Physics.Raycast(ray, out hit)) return hit.collider.gameObject;
 		return null;
 	}
