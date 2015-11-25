@@ -30,7 +30,7 @@ public class UserInput : MonoBehaviour {
 		if(player.hud.MouseInBounds()) {
 			GameObject hitObject = FindHitObject();
 			Vector3 hitPoint = FindHitPoint();
-			if(hitObject && hitPoint != ResourceManager.InvalidPosition && hitObject.name!="Ground") {
+			if(hitObject && hitPoint != ResourceManager.InvalidPosition) {
 				Debug.Log ("hit " + hitObject.name);
 				if(player.SelectedObject) {
 					player.SelectedObject.MouseClick(hitObject, hitPoint, player);

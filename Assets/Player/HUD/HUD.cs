@@ -14,7 +14,7 @@ public class HUD : MonoBehaviour {
 	private int currentFrame = 0;
 
 	private const int ORDERS_BAR_WIDTH = 150, RESOURCE_BAR_HEIGHT = 40;
-	private const int SELECTION_NAME_HEIGHT = 24;
+	private const int LABEL_HEIGHT = 24;
 	private const int PADDING = 5;
 
 	private Player player;
@@ -132,7 +132,8 @@ public class HUD : MonoBehaviour {
 		// write the name of the currently selected object
 		if(player.SelectedObject) {
 			string selectionName = player.SelectedObject.objectName;
-			if(selectionName != "") GUI.Label(new Rect(PADDING,PADDING,ORDERS_BAR_WIDTH - 2*PADDING,SELECTION_NAME_HEIGHT), selectionName);
+			if(selectionName != "") GUI.Label(new Rect(PADDING,PADDING,ORDERS_BAR_WIDTH - 2*PADDING,LABEL_HEIGHT), selectionName);
+			if(player.SelectedObject.BelongsToPlayer(this.player)) GUI.Label(new Rect(PADDING,PADDING + LABEL_HEIGHT,ORDERS_BAR_WIDTH - 2*PADDING,LABEL_HEIGHT), "You own this");
 		}
 
 		GUI.EndGroup();

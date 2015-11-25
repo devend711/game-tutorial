@@ -49,11 +49,16 @@ public class WorldObject : MonoBehaviour {
 	public virtual void PerformAction (string actionToPerform) {
 	}
 
+	public bool BelongsToPlayer(Player otherPlayer) {
+		return (this.player == otherPlayer);
+	}
+
+	// when something is clicked...
 	public virtual void MouseClick (GameObject hitObject, Vector3 hitPoint, Player controller) {
-		//only handle input if currently selected
-		if(currentlySelected && hitObject && hitObject.name != "Ground") {
+		// if this is currently selected...
+		if(this.currentlySelected && hitObject && hitObject.name != "Ground") {
 			WorldObject worldObject = hitObject.transform.parent.GetComponent<WorldObject>();
-			//clicked on another selectable object
+			// select the other object
 			if(worldObject) ChangeSelection(worldObject, controller);
 		}
 	}
