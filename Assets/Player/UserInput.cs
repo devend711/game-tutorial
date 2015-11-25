@@ -8,7 +8,7 @@ public class UserInput : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		player = transform.root.GetComponent<Player>();
+		this.player = transform.root.GetComponent<Player>();
 	}
 	
 	// Update is called once per frame
@@ -19,7 +19,7 @@ public class UserInput : MonoBehaviour {
 		}
 	}
 
-	private void MoveCamera() {
+	private void MoveCamera () {
 		float xpos = Input.mousePosition.x;
 		float ypos = Input.mousePosition.y;
 		Vector3 movement = new Vector3(0,0,0);
@@ -66,7 +66,7 @@ public class UserInput : MonoBehaviour {
 		}
 	}
 	
-	private void RotateCamera() {
+	private void RotateCamera () {
 		Vector3 origin = Camera.main.transform.eulerAngles;
 		Vector3 destination = origin;
 		
