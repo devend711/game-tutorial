@@ -16,7 +16,56 @@ public class UserInput : MonoBehaviour {
 		if(player.human) {
 			MoveCamera();
 			RotateCamera();
+			MonitorMouseActivity();
 		}
+	}
+
+	private void MonitorMouseActivity () {
+		if(Input.GetMouseButtonDown(0)) LeftMouseClick();
+		else if(Input.GetMouseButtonDown(1)) RightMouseClick();
+	}
+
+	private void LeftMouseClick() {
+		if(player.hud.MouseInBounds()) {
+			GameObject hitObject = FindHitObject();
+			Vector3 hitPoint = FindHitPoint();
+			if(hitObject && hitPoint != ResourceManager.InvalidPosition && hitObject.name!="Ground") {
+				Debug.Log ("hit " + hitObject.name);
+				if(player.SelectedObject) {
+					player.SelectedObject.MouseClick(hitObject, hitPoint, player);
+				} else {
+					WorldObject worldObject = hitObject.transform.root.GetComponent< WorldObject >();
+					if(worldObject) {
+						//we already know the player has no selected object
+						player.SelectedObject = worldObject;
+						worldObject.SetSelection(true);
+					}
+				}
+			}
+		}
+	}
+
+	private void RightMouseClick () {
+		if(player.hud.MouseInBounds() && player.SelectedObject) {
+			player.SelectedObject.SetSelection(false);
+			player.SelectedObject = null;
+		}
+	}
+
+	private GameObject FindHitObject () {
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		//RayCast will store the first collided object in `hit`
+		//or returns false if no object is found
+		if(Physics.Raycast(ray, out hit)) return hit.collider.gameObject;
+		return null;
+	}
+
+	private Vector3 FindHitPoint () {
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		if(Physics.Raycast(ray, out hit)) return hit.point;
+		return ResourceManager.InvalidPosition;
 	}
 
 	private void MoveCamera () {
