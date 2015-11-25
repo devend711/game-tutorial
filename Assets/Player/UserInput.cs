@@ -38,7 +38,7 @@ public class UserInput : MonoBehaviour {
 					if(worldObject) {
 						//we already know the player has no selected object
 						player.SelectedObject = worldObject;
-						worldObject.SetSelection(true);
+						worldObject.SetSelection(true, player.hud.GetPlayingArea());
 					}
 				}
 			}
@@ -47,7 +47,7 @@ public class UserInput : MonoBehaviour {
 
 	private void RightMouseClick () {
 		if(player.hud.MouseInBounds() && player.SelectedObject) {
-			player.SelectedObject.SetSelection(false);
+			player.SelectedObject.SetSelection(false, player.hud.GetPlayingArea());
 			player.SelectedObject = null;
 		}
 	}

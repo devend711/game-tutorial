@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using RTS;
 
 public class WorldObject : MonoBehaviour {
 
@@ -11,6 +12,9 @@ public class WorldObject : MonoBehaviour {
 	protected string[] actions = {};
 	protected bool currentlySelected = false;
 
+	protected Bounds selectionBounds;
+	protected Rect playingArea = new Rect(0.0f, 0.0f, 0.0f, 0.0f);
+
 	// this is called before Start ()
 	protected virtual void Awake () {
 
@@ -20,6 +24,9 @@ public class WorldObject : MonoBehaviour {
 		this.player = transform.root.GetComponentInChildren<Player>();
 		this.cost = this.sellValue = 0;
 		this.hitPoints = this.maxHitPoints = 0;
+
+		selectionBounds = ResourceManager.InvalidBounds;
+		CalculateBounds();
 	}
 	
 	protected virtual void Update () {
@@ -27,10 +34,12 @@ public class WorldObject : MonoBehaviour {
 	}
 	
 	protected virtual void OnGUI() {
+		if(this.currentlySelected) DrawSelection();
 	}
 
-	public void SetSelection (bool selected) {
+	public void SetSelection (bool selected, Rect playingArea) {
 		this.currentlySelected = selected;
+		if(selected) this.playingArea = playingArea;
 	}
 
 	public string[] GetActions() {
@@ -51,9 +60,29 @@ public class WorldObject : MonoBehaviour {
 
 	private void ChangeSelection(WorldObject worldObject, Player player) {
 		//this should be called by the following line, but there is an outside chance it will not
-		SetSelection(false);
-		if(player.SelectedObject) player.SelectedObject.SetSelection(false);
+		SetSelection(false, this.playingArea);
+		if(player.SelectedObject) player.SelectedObject.SetSelection(false, this.playingArea);
 		player.SelectedObject = worldObject;
-		worldObject.SetSelection(true);
+		worldObject.SetSelection(true, this.playingArea);
+	}
+
+	public void CalculateBounds() {
+		selectionBounds = new Bounds(transform.position, Vector3.zero);
+		foreach(Renderer r in GetComponentsInChildren< Renderer >()) {
+			selectionBounds.Encapsulate(r.bounds);
+		}
+	}
+
+	protected virtual void DrawSelectionBox(Rect selectBox) {
+		GUI.Box(selectBox, "");
+	}
+	
+	private void DrawSelection () {
+		GUI.skin = ResourceManager.SelectBoxSkin;
+		Rect selectBox = WorkManager.CalculateSelectionBox(selectionBounds, playingArea);
+		//Draw the selection box around the currently selected object, within the bounds of the playing area
+		GUI.BeginGroup(this.playingArea);
+		DrawSelectionBox(selectBox);
+		GUI.EndGroup();
 	}
 }
