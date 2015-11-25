@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using RTS;
 
 public class Player : MonoBehaviour {
 	
@@ -10,13 +12,57 @@ public class Player : MonoBehaviour {
 
 	public WorldObject SelectedObject { get; set; }
 
-	// Use this for initialization
+	public int startMoney, startMoneyLimit, startPower, startPowerLimit;
+	private Dictionary< ResourceType, int > resources, resourceLimits, startingResourceAmounts;
+
+	void Awake () {
+		resources = InitResourceList();
+		resourceLimits = InitResourceList();
+		startingResourceAmounts = InitResourceList();
+	}
+
 	void Start () {
 		this.hud = GetComponentInChildren< HUD >();
+		AddStartResourceLimits ();
+		AddStartResources();
 	}
 	
-	// Update is called once per frame
 	void Update () {
-	
+		if (this.human) hud.SetResourceValues(resources, resourceLimits);
 	}
+
+	// init resources
+	private Dictionary<ResourceType, int> InitResourceList () {
+		Dictionary< ResourceType, int > resourceList = new Dictionary<ResourceType, int>();
+		// loop through all resources and set our store of them to 0
+		foreach(ResourceType resourceType in System.Enum.GetValues(typeof(ResourceType))) {
+			Debug.Log(resourceType);
+			resourceList.Add(resourceType, 0);
+		}
+		return resourceList;
+	}
+
+	private void AddStartResources () {
+		foreach(ResourceType resource in System.Enum.GetValues(typeof(ResourceType))) {
+			this.resources[resource] += this.startingResourceAmounts[resource];
+		}
+	}
+
+	private void AddStartResourceLimits () {
+		foreach(ResourceType resource in System.Enum.GetValues(typeof(ResourceType))) {
+			this.resourceLimits[resource] += 100;
+		}
+	}
+
+	private void IncResource(ResourceType resource, int amount) {
+		// make sure we have under the limit
+		if (this.resourceLimits [resource] > (this.resources [resource] + amount)) {
+			this.resources [resource] += amount;
+		}
+	}
+
+	private void IncResourceLimit(ResourceType resource, int amount) {
+		this.resourceLimits[resource] += amount;
+	}
+
 }

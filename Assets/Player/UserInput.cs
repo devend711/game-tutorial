@@ -62,9 +62,9 @@ public class UserInput : MonoBehaviour {
 				// if we don't have anything selected already...
 				else if(hoverObject.name != "Ground") {
 					// check if the hovered object is owned by the player
+					if(hoverObject.transform.parent == null) return;
 					Player owner = hoverObject.transform.parent.GetComponent<Player>();
 					if(owner) {
-						Debug.Log("this hovered object is owned by the player");
 						// look for a unit or building that we are hovering over
 						Unit unit = hoverObject.transform.parent.GetComponent<Unit>();
 						Building building = hoverObject.transform.parent.GetComponent<Building>();

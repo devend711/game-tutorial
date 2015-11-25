@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using RTS;
 
 public class HUD : MonoBehaviour {
@@ -10,20 +11,28 @@ public class HUD : MonoBehaviour {
 	public Texture2D selectCursor, leftCursor, rightCursor, upCursor, downCursor;
 	public Texture2D[] moveCursors, attackCursors, harvestCursors;
 
+	public Texture2D[] resourceIcons;
+	private Dictionary< ResourceType, Texture2D > resourceImages;
+
 	private CursorState activeCursorState;
 	private int currentFrame = 0;
 
 	private const int ORDERS_BAR_WIDTH = 150, RESOURCE_BAR_HEIGHT = 40;
 	private const int LABEL_HEIGHT = 24;
 	private const int PADDING = 5;
+	private const int ICON_WIDTH = 32, ICON_HEIGHT = 32, TEXT_WIDTH = 128, TEXT_HEIGHT = 32;
 
 	private Player player;
+	private Dictionary< ResourceType, int > resourceValues, resourceLimits;
 
 	// Use this for initialization
 	void Start () {
 		player = transform.root.GetComponent< Player >();
 		ResourceManager.StoreSelectBoxItems(this.selectBoxSkin);
 		SetCursorState(CursorState.Select);
+		resourceValues = new Dictionary< ResourceType, int >();
+		resourceLimits = new Dictionary< ResourceType, int >();
+		SetupResourceIcons();
 	}
 	
 	// Update is called once per frame
@@ -139,14 +148,47 @@ public class HUD : MonoBehaviour {
 		GUI.EndGroup();
 	}
 
+	private void DrawResourceIcon (ResourceType type, int iconLeft, int textLeft, int topPos) {
+		Texture2D icon = resourceImages[type];
+		string text = resourceValues[type].ToString() + "/" + resourceLimits[type].ToString();
+		GUI.DrawTexture(new Rect(iconLeft, topPos, ICON_WIDTH, ICON_HEIGHT), icon);
+		GUI.Label (new Rect(textLeft, topPos, TEXT_WIDTH, TEXT_HEIGHT), text);
+	}
+
 	private void DrawResourceBar() {
 		GUI.skin = resourceSkin;
 		GUI.BeginGroup(new Rect(0,0,Screen.width,RESOURCE_BAR_HEIGHT));
 		GUI.Box(new Rect(0,0,Screen.width,RESOURCE_BAR_HEIGHT),"");
+		// draw resource icons
+		int topPos = 4, iconLeft = 4, textLeft = 20;
+		foreach (ResourceType resource in System.Enum.GetValues(typeof(ResourceType))) {
+			DrawResourceIcon(resource, iconLeft, textLeft, topPos);
+			iconLeft += TEXT_WIDTH;
+			textLeft += TEXT_WIDTH;
+		}
 		GUI.EndGroup();
 	}
 
-	public Rect GetPlayingArea() {
+	public Rect GetPlayingArea () {
 		return new Rect(0, RESOURCE_BAR_HEIGHT, Screen.width - ORDERS_BAR_WIDTH, Screen.height - RESOURCE_BAR_HEIGHT);
+	}
+
+	public void SetResourceValues (Dictionary< ResourceType, int > resourceValues, Dictionary< ResourceType, int > resourceLimits) {
+		this.resourceValues = resourceValues;
+		this.resourceLimits = resourceLimits;
+	}
+
+	private void SetupResourceIcons () {
+		this.resourceImages = new Dictionary<ResourceType, Texture2D>();
+
+		// fake a foreach with index
+		int i = 0;
+		foreach(ResourceType resource in System.Enum.GetValues(typeof(ResourceType))) {
+			this.resourceImages.Add(resource, resourceIcons[i]);
+			// init the stores/limits of this to be 0
+			this.resourceValues[resource] = 0;
+			this.resourceLimits[resource] = 0;
+			i++;
+		};
 	}
 }

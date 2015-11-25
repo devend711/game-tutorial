@@ -9,7 +9,8 @@ public class Unit : WorldObject {
 	private Vector3 destination;
 	private Quaternion targetRotation;
 
-	private const int DEFAULT_UNIT_MOVESPEED = 2;
+	private const int DEFAULT_UNIT_MOVESPEED = 10;
+	private const int DEFAULT_UNIT_ROTATESPEED = 10;
 
 	protected override void Awake () {
 		base.Awake();
@@ -18,6 +19,7 @@ public class Unit : WorldObject {
 	protected override void Start () {
 		base.Start();
 		this.moveSpeed = DEFAULT_UNIT_MOVESPEED;
+		this.rotateSpeed = DEFAULT_UNIT_ROTATESPEED;
 	}
 	
 	protected override void Update () {
@@ -67,6 +69,7 @@ public class Unit : WorldObject {
 	}
 
 	private void TurnToTarget () {
+		Debug.Log (this.name + " TurnToTarget()");
 		transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed);
 		//sometimes it gets stuck exactly 180 degrees out in the calculation and does nothing, this check fixes that
 		Quaternion inverseTargetRotation = new Quaternion(-targetRotation.x, -targetRotation.y, -targetRotation.z, -targetRotation.w);
@@ -77,6 +80,7 @@ public class Unit : WorldObject {
 	}
 
 	private void MakeMove () {
+		Debug.Log (this.name + " MakeMove()");
 		transform.position = Vector3.MoveTowards(transform.position, destination, Time.deltaTime * moveSpeed);
 		if(transform.position == destination) moving = false;
 	}
