@@ -9,6 +9,8 @@ public class UserInput : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		this.player = transform.root.GetComponent<Player>();
+		Camera.main.orthographic = true;
+		Camera.main.nearClipPlane = 1;
 	}
 	
 	// Update is called once per frame
@@ -136,13 +138,12 @@ public class UserInput : MonoBehaviour {
 		movement.y = 0;
 
 		// zoom
-		float zoomDistance = ResourceManager.ScrollSpeed * Input.GetAxis("Mouse ScrollWheel");
-		Camera.main.orthographicSize -= zoomDistance;
-		// limit to range
-		if (Camera.main.orthographicSize < ResourceManager.MinCameraHeight)
-			Camera.main.orthographicSize = ResourceManager.MinCameraHeight;
-		if (Camera.main.orthographicSize > ResourceManager.MaxCameraHeight)
-			Camera.main.orthographicSize = ResourceManager.MaxCameraHeight;
+//		float zoomDistance = ResourceManager.ScrollSpeed * Input.GetAxis ("Mouse ScrollWheel");
+//		if (zoomDistance != 0) {
+//			int zoomDirection = (Input.GetAxis("Mouse ScrollWheel") > 0) ? 1 : -1;
+//			ZoomCamera(Camera.main.ScreenToWorldPoint(Input.mousePosition), zoomDirection);
+//		}
+		ZoomCamera ();
 
 		// calculate desired camera position based on received input
 		Vector3 origin = Camera.main.transform.position;
@@ -150,9 +151,12 @@ public class UserInput : MonoBehaviour {
 		destination.x += movement.x;
 		destination.z += movement.z;
 
+		// scroll faster if we are zoomed out
+		float adjustedScrollSpeed = ResourceManager.ScrollSpeed * Mathf.Pow(2*Camera.main.orthographicSize/ResourceManager.MaxCameraHeight, 1.1f);
+
 		// if a change in position is detected perform the necessary update
 		if(destination != origin) {
-			Camera.main.transform.position = Vector3.MoveTowards(origin, destination, Time.deltaTime * ResourceManager.ScrollSpeed);
+			Camera.main.transform.position = Vector3.MoveTowards(origin, destination, Time.deltaTime * adjustedScrollSpeed );
 		}
 	}
 	
@@ -171,4 +175,35 @@ public class UserInput : MonoBehaviour {
 			Camera.main.transform.eulerAngles = Vector3.MoveTowards(origin, destination, Time.deltaTime * ResourceManager.RotateSpeed);
 		}
 	}
+
+	// Ortographic camera zoom towards a point (in world coordinates)
+	void ZoomCamera2(Vector3 zoomTowards, float amount) {
+		// calculate how much we will have to move towards the zoomTowards position
+		float multiplier = (1.0f / Camera.main.orthographicSize * amount);
+		// move camera
+		transform.position += (zoomTowards - transform.position) * multiplier; 
+		// do the zoom camera
+		Camera.main.orthographicSize -= amount * ResourceManager.ZoomSpeed/100;
+		// limit zoom
+		Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize,
+		                                           ResourceManager.MinCameraHeight, 
+		                                           ResourceManager.MaxCameraHeight);
+	}
+
+	void ZoomCamera () {
+		float zoom = (Input.GetAxis ("Mouse ScrollWheel"));
+		if (zoom == 0)
+			return;
+		if (zoom > 0) {
+			Camera.main.orthographicSize += ResourceManager.ZoomSpeed/100;
+			if(Camera.main.orthographicSize > ResourceManager.MaxCameraHeight)
+				Camera.main.orthographicSize = ResourceManager.MaxCameraHeight;
+		}
+		else {
+			Camera.main.orthographicSize -= ResourceManager.ZoomSpeed/100;
+			if(Camera.main.orthographicSize < ResourceManager.MinCameraHeight)
+				Camera.main.orthographicSize = ResourceManager.MinCameraHeight;
+		}
+	}
+
 }
