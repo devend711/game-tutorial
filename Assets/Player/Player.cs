@@ -68,6 +68,8 @@ public class Player : MonoBehaviour {
 	public void AddUnit(string unitName, Vector3 spawnPoint, Quaternion rotation) {
 		// get all our units
 		Units units = GetComponentInChildren<Units>();
+		// slightly randomize the spawn point
+		spawnPoint = Unit.AddRandomnessToPoint(spawnPoint);
 		// build a new unit from a Prefab
 		GameObject newUnit = (GameObject)Instantiate(ResourceManager.GetUnit(unitName), spawnPoint, rotation);
 		// the new unit's parent is this players set of units

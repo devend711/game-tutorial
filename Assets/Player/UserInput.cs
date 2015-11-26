@@ -45,6 +45,7 @@ public class UserInput : MonoBehaviour {
 						// we already know the player has no selected object
 						player.SelectedObject = worldObject;
 						worldObject.SetSelection(true, player.hud.GetPlayingArea());
+						player.hud.setOrderBarState(worldObject.type);
 					}
 				}
 			}

@@ -12,7 +12,6 @@ public class Building : WorldObject {
 	private int buildSpeed;
 
 	public static int SPAWN_DISTANCE_FROM_BUILDING = 10;
-	public static int MAX_RANDOM_SPAWN_DISTANCE_FACTOR = 2;
 	public static int DEFAULT_BUILD_SPEED = 10;
 	public static int DEFAULT_MAX_QUEUE_SIZE = 3;
 	
@@ -27,7 +26,8 @@ public class Building : WorldObject {
 	}
 	
 	protected override void Start () {
-		base.Start();
+		base.Start ();
+		this.type = WorldObjectType.Unit;
 	}
 	
 	protected override void Update () {
@@ -53,10 +53,7 @@ public class Building : WorldObject {
 			if(currentBuildProgress > maxBuildProgress) {
 				if(player) {
 					// avoid units piling up on top of eachother by adding some randomness to the spawn point
-					Vector3 randomizedSpawnPoint = this.spawnPoint;
-					randomizedSpawnPoint.x += Random.Range(-MAX_RANDOM_SPAWN_DISTANCE_FACTOR, MAX_RANDOM_SPAWN_DISTANCE_FACTOR);
-					randomizedSpawnPoint.z += Random.Range(-MAX_RANDOM_SPAWN_DISTANCE_FACTOR, MAX_RANDOM_SPAWN_DISTANCE_FACTOR);
-					player.AddUnit(buildQueue.Dequeue(), randomizedSpawnPoint, transform.rotation);
+					player.AddUnit(buildQueue.Dequeue(), this.spawnPoint, transform.rotation);
 				}
 				currentBuildProgress = 0.0f;
 			}

@@ -1,18 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using RTS;
 
 public class Unit : WorldObject {
 	protected bool moving, rotating;
-	public float moveSpeed, rotateSpeed;
+	protected float moveSpeed, rotateSpeed;
+	public float currentHealth, maxHealth;
+
+	protected Dictionary<ResourceType, int> resourceCosts;
 	
 	private Vector3 destination;
 	private Quaternion targetRotation;
 
-	public Animation animation;
+	protected Animation animation;
 
 	private const int DEFAULT_UNIT_MOVESPEED = 10;
+	public static float UNIT_MOVEMENT_RANDOMIZER = 1.5f;
 	private const int DEFAULT_UNIT_ROTATESPEED = 10;
+
+	private const int DEFAULT_UNIT_MAXHEALTH = 1;
 
 	protected override void Awake () {
 		base.Awake();
@@ -20,8 +27,10 @@ public class Unit : WorldObject {
 	
 	protected override void Start () {
 		base.Start();
+		this.type = WorldObjectType.Unit;
 		this.moveSpeed = DEFAULT_UNIT_MOVESPEED;
 		this.rotateSpeed = DEFAULT_UNIT_ROTATESPEED;
+		this.maxHealth = this.currentHealth = DEFAULT_UNIT_MAXHEALTH;
 		this.animation = null;
 	}
 	
@@ -65,8 +74,11 @@ public class Unit : WorldObject {
 
 	public void StartMove (Vector3 destination) {
 		Debug.Log (this.name + " starting to move");
-		this.destination = destination;
-		this.targetRotation = Quaternion.LookRotation (destination - transform.position);
+		// add some randomness to the destination point
+		Vector3 randomizedDestination = AddRandomnessToPoint (destination);
+		// set our new destinatino point
+		this.destination = randomizedDestination;
+		this.targetRotation = Quaternion.LookRotation (randomizedDestination - transform.position);
 		this.rotating = true;
 		this.moving = false;
 	}
@@ -86,5 +98,12 @@ public class Unit : WorldObject {
 		Debug.Log (this.name + " MakeMove()");
 		transform.position = Vector3.MoveTowards(transform.position, destination, Time.deltaTime * moveSpeed);
 		if(transform.position == destination) this.moving = false;
+	}
+
+	public static Vector3 AddRandomnessToPoint(Vector3 point) {
+		Vector3 randomizedPoint = point;
+		randomizedPoint.x += Random.Range (-UNIT_MOVEMENT_RANDOMIZER, UNIT_MOVEMENT_RANDOMIZER);
+		randomizedPoint.z += Random.Range (-UNIT_MOVEMENT_RANDOMIZER, UNIT_MOVEMENT_RANDOMIZER);
+		return randomizedPoint;
 	}
 }

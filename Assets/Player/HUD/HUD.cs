@@ -6,12 +6,14 @@ using RTS;
 public class HUD : MonoBehaviour {
 
 	public GUISkin resourceSkin, ordersSkin, selectBoxSkin, mouseCursorSkin;
+	private WorldObjectType orderBarState;
 
 	public Texture2D activeCursor;
 	public Texture2D selectCursor, leftCursor, rightCursor, upCursor, downCursor;
 	public Texture2D[] moveCursors, attackCursors, harvestCursors;
 	public Texture2D buttonHover, buttonClick;
 	public Texture2D buildFrame, buildMask;
+	public Texture2D healthIcon;
 	public Texture2D[] resourceIcons;
 
 	private Dictionary< ResourceType, Texture2D > resourceImages;
@@ -22,7 +24,7 @@ public class HUD : MonoBehaviour {
 	private const int ORDERS_BAR_WIDTH = 150, RESOURCE_BAR_HEIGHT = 40;
 	private const int LABEL_HEIGHT = 24;
 	private const int PADDING = 5;
-	private const int ICON_WIDTH = 32, ICON_HEIGHT = 32, TEXT_WIDTH = 128, TEXT_HEIGHT = 32;
+	private const int ICON_WIDTH = 16, ICON_HEIGHT = 16, TEXT_WIDTH = 128, TEXT_HEIGHT = 24;
 
 	private Player player;
 	private Dictionary< ResourceType, int > resourceValues, resourceLimits;
@@ -42,6 +44,7 @@ public class HUD : MonoBehaviour {
 		buildAreaHeight = Screen.height - RESOURCE_BAR_HEIGHT - SELECTION_NAME_HEIGHT - 2 * BUTTON_SPACING;
 		resourceValues = new Dictionary< ResourceType, int >();
 		resourceLimits = new Dictionary< ResourceType, int >();
+		orderBarState = WorldObjectType.None;
 		SetupResourceIcons();
 		SetCursorState(CursorState.Select);
 		ResourceManager.StoreSelectBoxItems(this.selectBoxSkin);
@@ -162,12 +165,16 @@ public class HUD : MonoBehaviour {
 			GUI.DrawTexture(new Rect(2 * PADDING, topPos, width, height), buildMask);
 		}
 	}
-	
+
 	private void DrawOrdersBar() {
 		GUI.skin = ordersSkin;
 		GUI.BeginGroup(new Rect(Screen.width-ORDERS_BAR_WIDTH,RESOURCE_BAR_HEIGHT,ORDERS_BAR_WIDTH,Screen.height-RESOURCE_BAR_HEIGHT));
 		GUI.Box(new Rect(0,0,ORDERS_BAR_WIDTH,Screen.height-RESOURCE_BAR_HEIGHT),"");
-
+		if (this.orderBarState == WorldObjectType.None) {
+			GUI.EndGroup();
+			return;
+		}
+		// draw the info
 		int row = 0;
 		// write the name of the currently selected object
 		if(player.SelectedObject) {
@@ -184,10 +191,20 @@ public class HUD : MonoBehaviour {
 				DrawActions(player.SelectedObject.GetActions());
 				//store the current selection
 				this.lastSelectedObject = player.SelectedObject;
-				// draw build status
-				Building selectedBuilding = lastSelectedObject.GetComponent<Building>();
-				if(selectedBuilding) {
-					DrawBuildQueue(selectedBuilding.getBuildQueueValues(), selectedBuilding.getBuildPercentage());
+				if(this.orderBarState == WorldObjectType.Building) {
+					// draw build status
+					Building selectedBuilding = lastSelectedObject.GetComponent<Building>();
+					if(selectedBuilding) {
+						DrawBuildQueue(selectedBuilding.getBuildQueueValues(), selectedBuilding.getBuildPercentage());
+					}
+				} else if(this.orderBarState == WorldObjectType.Unit) {
+					Unit selectedUnit = lastSelectedObject.GetComponent<Unit>();
+					if(selectedUnit) { 
+						row++;
+						Texture2D icon = this.healthIcon;
+						string healthString = selectedUnit.currentHealth.ToString() + "/" + selectedUnit.maxHealth.ToString();
+						DrawIconWithText(icon, PADDING, PADDING, PADDING + row*LABEL_HEIGHT, healthString);
+					}
 				}
 			}
 		}
@@ -244,13 +261,24 @@ public class HUD : MonoBehaviour {
 		}
 		GUI.EndGroup();
 	}
+
+	private void DrawIcon (Texture2D icon, int iconLeft, int topPos) {
+		GUI.DrawTexture(new Rect(iconLeft, topPos, ICON_WIDTH, ICON_HEIGHT), icon);
+	}
+
+	private void DrawIconWithText(Texture2D icon, int iconLeft, int textLeft, int topPos, string text) {
+		DrawIcon (icon, iconLeft, topPos);
+		GUI.Label (new Rect(iconLeft + ICON_WIDTH, topPos, TEXT_WIDTH, TEXT_HEIGHT), text);
+	}
+
+
+
 	// RESOURCES
 
 	private void DrawResourceIcon (ResourceType type, int iconLeft, int textLeft, int topPos) {
 		Texture2D icon = resourceImages[type];
 		string text = resourceValues[type].ToString() + "/" + resourceLimits[type].ToString();
-		GUI.DrawTexture(new Rect(iconLeft, topPos, ICON_WIDTH, ICON_HEIGHT), icon);
-		GUI.Label (new Rect(textLeft, topPos, TEXT_WIDTH, TEXT_HEIGHT), text);
+		DrawIconWithText (icon, iconLeft, textLeft, topPos, text);
 	}
 
 	private void DrawResourceBar() {
@@ -288,5 +316,9 @@ public class HUD : MonoBehaviour {
 			this.resourceLimits[resource] = 0;
 			i++;
 		};
+	}
+
+	public void setOrderBarState (WorldObjectType objectType) {
+		this.orderBarState = objectType;
 	}
 }

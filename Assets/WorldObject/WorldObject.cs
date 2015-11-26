@@ -7,6 +7,7 @@ public class WorldObject : MonoBehaviour {
 	public string objectName;
 	public Texture2D buildImage;
 	public int cost, sellValue, hitPoints, maxHitPoints;
+	public WorldObjectType type;
 
 	protected Player player;
 	protected string[] actions = {};
@@ -24,6 +25,7 @@ public class WorldObject : MonoBehaviour {
 		this.player = transform.root.GetComponentInChildren<Player>();
 		this.cost = this.sellValue = 0;
 		this.hitPoints = this.maxHitPoints = 0;
+		this.type = WorldObjectType.None;
 
 		selectionBounds = ResourceManager.InvalidBounds;
 		CalculateBounds();
