@@ -35,6 +35,10 @@ public class UserInput : MonoBehaviour {
 				if(player.SelectedObject) {
 					player.SelectedObject.MouseClick(hitObject, hitPoint, player);
 				} else {
+					if(!hitObject.transform.parent) {
+						Debug.Log ("couldn't identify a parent for that hit object");
+						return;
+					}
 					WorldObject worldObject = hitObject.transform.parent.GetComponent<WorldObject>();
 					Debug.Log(worldObject.name);
 					if(worldObject) {
