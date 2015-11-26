@@ -11,8 +11,9 @@ public class HUD : MonoBehaviour {
 	public Texture2D selectCursor, leftCursor, rightCursor, upCursor, downCursor;
 	public Texture2D[] moveCursors, attackCursors, harvestCursors;
 	public Texture2D buttonHover, buttonClick;
-	
+	public Texture2D buildFrame, buildMask;
 	public Texture2D[] resourceIcons;
+
 	private Dictionary< ResourceType, Texture2D > resourceImages;
 
 	private CursorState activeCursorState;
@@ -144,6 +145,24 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
+	private void DrawBuildQueue(string[] buildQueue, float buildPercentage) {
+		for(int i = 0; i < buildQueue.Length; i++) {
+			float topPos = i * BUILD_IMAGE_HEIGHT - (i+1) * PADDING;
+			Rect buildPos = new Rect(PADDING, topPos, BUILD_IMAGE_WIDTH, BUILD_IMAGE_HEIGHT);
+			GUI.DrawTexture(buildPos, ResourceManager.GetBuildImage(buildQueue[i]));
+			GUI.DrawTexture(buildPos, buildFrame);
+			topPos += PADDING;
+			float width = BUILD_IMAGE_WIDTH - 2 * PADDING;
+			float height = BUILD_IMAGE_HEIGHT - 2 * PADDING;
+			if(i==0) {
+				//shrink the build mask on the item currently being built to give an idea of progress
+				topPos += height * buildPercentage;
+				height *= (1 - buildPercentage);
+			}
+			GUI.DrawTexture(new Rect(2 * PADDING, topPos, width, height), buildMask);
+		}
+	}
+	
 	private void DrawOrdersBar() {
 		GUI.skin = ordersSkin;
 		GUI.BeginGroup(new Rect(Screen.width-ORDERS_BAR_WIDTH,RESOURCE_BAR_HEIGHT,ORDERS_BAR_WIDTH,Screen.height-RESOURCE_BAR_HEIGHT));
@@ -165,6 +184,11 @@ public class HUD : MonoBehaviour {
 				DrawActions(player.SelectedObject.GetActions());
 				//store the current selection
 				this.lastSelectedObject = player.SelectedObject;
+				// draw build status
+				Building selectedBuilding = lastSelectedObject.GetComponent<Building>();
+				if(selectedBuilding) {
+					DrawBuildQueue(selectedBuilding.getBuildQueueValues(), selectedBuilding.getBuildPercentage());
+				}
 			}
 		}
 
