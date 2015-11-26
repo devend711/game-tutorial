@@ -9,6 +9,8 @@ public class Unit : WorldObject {
 	private Vector3 destination;
 	private Quaternion targetRotation;
 
+	public Animation animation;
+
 	private const int DEFAULT_UNIT_MOVESPEED = 10;
 	private const int DEFAULT_UNIT_ROTATESPEED = 10;
 
@@ -20,6 +22,7 @@ public class Unit : WorldObject {
 		base.Start();
 		this.moveSpeed = DEFAULT_UNIT_MOVESPEED;
 		this.rotateSpeed = DEFAULT_UNIT_ROTATESPEED;
+		this.animation = null;
 	}
 	
 	protected override void Update () {
@@ -82,6 +85,6 @@ public class Unit : WorldObject {
 	private void MakeMove () {
 		Debug.Log (this.name + " MakeMove()");
 		transform.position = Vector3.MoveTowards(transform.position, destination, Time.deltaTime * moveSpeed);
-		if(transform.position == destination) moving = false;
+		if(transform.position == destination) this.moving = false;
 	}
 }
