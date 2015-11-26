@@ -130,29 +130,27 @@ public class UserInput : MonoBehaviour {
 			player.hud.SetCursorState(CursorState.Select);
 		}
 
-		//make sure movement is in the direction the camera is pointing
-		//but ignore the vertical tilt of the camera to get sensible scrolling
+		// make sure movement is in the direction the camera is pointing
+		// but ignore the vertical tilt of the camera to get sensible scrolling
 		movement = Camera.main.transform.TransformDirection(movement);
 		movement.y = 0;
 
-		//away from ground movement
-		movement.y -= ResourceManager.ScrollSpeed * Input.GetAxis("Mouse ScrollWheel");
+		// zoom
+		float zoomDistance = ResourceManager.ScrollSpeed * Input.GetAxis("Mouse ScrollWheel");
+		Camera.main.orthographicSize -= zoomDistance;
+		// limit to range
+		if (Camera.main.orthographicSize < ResourceManager.MinCameraHeight)
+			Camera.main.orthographicSize = ResourceManager.MinCameraHeight;
+		if (Camera.main.orthographicSize > ResourceManager.MaxCameraHeight)
+			Camera.main.orthographicSize = ResourceManager.MaxCameraHeight;
 
-		//calculate desired camera position based on received input
+		// calculate desired camera position based on received input
 		Vector3 origin = Camera.main.transform.position;
 		Vector3 destination = origin;
 		destination.x += movement.x;
-		destination.y += movement.y;
 		destination.z += movement.z;
 
-		//limit away from ground movement to be between a minimum and maximum distance
-		if(destination.y > ResourceManager.MaxCameraHeight) {
-			destination.y = ResourceManager.MaxCameraHeight;
-		} else if(destination.y < ResourceManager.MinCameraHeight) {
-			destination.y = ResourceManager.MinCameraHeight;
-		}
-
-		//if a change in position is detected perform the necessary update
+		// if a change in position is detected perform the necessary update
 		if(destination != origin) {
 			Camera.main.transform.position = Vector3.MoveTowards(origin, destination, Time.deltaTime * ResourceManager.ScrollSpeed);
 		}
